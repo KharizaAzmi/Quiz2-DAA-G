@@ -198,3 +198,75 @@ class PuzzlePage(tk.Frame):
         self.algorithm = self.available_algorithms[self.algorithm_index]
         self.label_subheading.configure(text=f'solved using {self.algorithm.name} algorithm')
     
+    def transform_click(self, tile_index):
+        possible_actions = Board.valid_actions(self.current_board_state)
+        blank_index = self.current_board_state.index(0)
+        tile_value = int(self.board[tile_index].cget('text'))
+        
+        for action in possible_actions:
+            if not self.is_solving and not self.is_done:
+                if action == 'U' and self.current_board_state[blank_index - 3] == tile_value:
+                    self.transform_state(action)
+                
+                elif action == 'D' and self.current_board_state[blank_index + 3] == tile_value:
+                     self.transform_state(action)
+                
+                elif action == 'L' and self.current_board_state[blank_index - 1] == tile_value:
+                     self.transform_state(action)
+                
+                elif action == 'R' and self.current_board_state[blank_index + 1] == tile_value:
+                     self.transform_state(action)
+        
+        if not self.is_done and self.current_board_state == self.goal_board_state:
+            self.update_status('Well done!')
+            self.is_done = True
+    
+    def transform_keys(self, action):
+        if not self.is_solving and not self.is_done:
+           if action in Board.valid_actions(self.current_board_state):
+                self.transform_state(action)
+        
+        if not self.is_done and self.current_board_state == self.goal_board_state:
+            self.update_status('Well done!')
+            self.is_done = True
+    
+    def transform_state(self, action, delay_time=0):
+        new_state = Board.transform(self.current_board_state, action)
+        
+        current_index = self.current_board_state.index(0)
+        new_index = new_state.index(0)
+        
+        first_tile = self.board[current_index]
+        second_tile = self.board[new_index]
+        
+        first_tile_properties = self.get_tile_property(first_tile)
+        second_tile_properties = self.get_tile_property(second_tile)
+        
+        self.set_tile_property(first_tile, second_tile_properties)
+        self.set_tile_property(second_tile, first_tile_properties)
+        
+        self.current_board_state = new_state
+        
+        if not self.is_done:
+            self.update_moves(self.moves + 1)
+        
+        time.sleep(delay_time)
+    
+    def get_tile_property(self, tile):
+        return {
+            'text': tile.cget('text'),
+            'background': tile.cget('background'),
+            'image': tile.cget('image'),
+            'state': tile.cget('state')
+        }
+    
+    def set_tile_property(self, tile, properties):
+        tile.configure(**properties)
+    
+    def update_moves(self, moves):
+        self.moves = moves
+        self.label_moves.configure(text=f'Moves: {self.moves}')
+    
+    def update_status(self, status):
+        self.label_status.configure(text=status)
+    
