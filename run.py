@@ -1,3 +1,5 @@
+"""runing game"""
+
 from src.app import EightPuzzle
 
 if __name__ == '__main__':
